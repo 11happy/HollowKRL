@@ -1,0 +1,5 @@
+is_global = true
+build_property.RootNamespace = HKMod
+build_property.ProjectDir = /home/happy/HollowKRL/HKMod/
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = 
