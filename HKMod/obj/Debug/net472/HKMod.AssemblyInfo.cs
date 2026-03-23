@@ -15,7 +15,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCopyrightAttribute("Copyright © ")]
 [assembly: System.Reflection.AssemblyDescriptionAttribute("A Hollow Knight mod.")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8791feb495a96e11b84fe6445ced2c12fe5d549a")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b886e34d61a88084dcae9ba4f11097d2bcccd6de")]
 [assembly: System.Reflection.AssemblyProductAttribute("HKMod")]
 [assembly: System.Reflection.AssemblyTitleAttribute("HKMod")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

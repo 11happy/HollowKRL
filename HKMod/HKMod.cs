@@ -35,19 +35,13 @@ namespace HKMod
         private float _threatVx     = 0f;
         private float _threatVy     = 0f;
 
-        // ── Internal only ─────────────────────────────────────────
-        private bool _bossDefeated   = false;
-        private bool _playerDefeated = false;
-
         private readonly object _stateLock = new object();
 
         // ── Boss reference ────────────────────────────────────────
         private HealthManager _bossHM = null;
 
         // ── Threat scan cache ─────────────────────────────────────
-        private DamageHero[] _cachedThreats  = new DamageHero[0];
-        private float        _lastThreatScan = 0f;
-        private const float  THREAT_SCAN_INTERVAL = 0.1f;
+        private DamageHero[] _cachedThreats = new DamageHero[0];
 
         // ── TCP ───────────────────────────────────────────────────
         private TcpListener _server;
@@ -62,14 +56,12 @@ namespace HKMod
             Log("ENVMOD Initializing");
             Instance = this;
 
-            ModHooks.TakeHealthHook      += OnPlayerTakeDamage;
             ModHooks.AfterPlayerDeadHook += OnPlayerDead;
             On.HeroController.AddHealth  += OnPlayerHeal;
             On.HealthManager.TakeDamage  += OnBossTakeDamage;
             On.HealthManager.Die         += OnBossDie;
             On.GameManager.Update        += OnGameManagerUpdate;
 
-            // ✅ Use sceneLoaded — compatible with HK mod loader
             UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded;
 
             _serverThread = new Thread(ServerLoop) { IsBackground = true };
@@ -87,23 +79,11 @@ namespace HKMod
         }
 
         // ── Player hooks ──────────────────────────────────────────
-        private int OnPlayerTakeDamage(int damage)
-        {
-            lock (_stateLock)
-            {
-                // ✅ Read directly — no double subtraction
-                _playerHp    = PlayerData.instance.health;
-                _playerMaxHp = PlayerData.instance.maxHealth;
-            }
-            return damage;
-        }
-
         private void OnPlayerDead()
         {
             lock (_stateLock)
             {
-                _playerHp       = 0;
-                _playerDefeated = true;
+                _playerHp = 0;
             }
         }
 
@@ -132,16 +112,8 @@ namespace HKMod
 
             lock (_stateLock)
             {
-                // ✅ Only set boss if HP > 50 — filters small enemies
                 if (_bossHM == null && self.hp > 50)
                     _bossHM = self;
-
-                if (self != _bossHM) return;
-
-                if (self.hp > _bossMaxHp)
-                    _bossMaxHp = self.hp;
-
-                _bossHp = self.hp;
             }
         }
 
@@ -155,9 +127,8 @@ namespace HKMod
 
             lock (_stateLock)
             {
-                _bossHp       = 0;
-                _bossDefeated = true;
-                _bossHM       = null;
+                _bossHp  = 0;
+                _bossHM  = null;
             }
         }
 
@@ -168,12 +139,26 @@ namespace HKMod
             {
                 _bossHp = _bossMaxHp = 0;
                 _bossX  = _bossY = _bossVx = _bossVy = 0f;
-                _bossDefeated   = false;
-                _playerDefeated = false;
-                _bossHM         = null;
-                _threatActive   = false;
+                _bossHM       = null;
+                _threatActive = false;
                 _threatDx = _threatDy = _threatVx = _threatVy = 0f;
             }
+
+            // Try to grab boss immediately at scene load
+            foreach (var hm in GameObject.FindObjectsOfType<HealthManager>())
+            {
+                if (hm.gameObject.layer == 11 && hm.hp > 50)
+                {
+                    lock (_stateLock)
+                    {
+                        _bossHM    = hm;
+                        _bossHp    = hm.hp;
+                        _bossMaxHp = hm.hp;
+                    }
+                    break;
+                }
+            }
+
             Log($"Scene loaded: {scene.name}");
         }
 
@@ -193,6 +178,13 @@ namespace HKMod
                 _playerVy = heroRb != null ? heroRb.velocity.y : 0f;
                 _onGround = hero.cState.onGround;
 
+                // Always poll — no longer dependent on damage hook
+                if (PlayerData.instance != null)
+                {
+                    _playerHp    = PlayerData.instance.health;
+                    _playerMaxHp = PlayerData.instance.maxHealth;
+                }
+
                 if (_bossHM != null)
                 {
                     _bossX = _bossHM.transform.position.x;
@@ -201,6 +193,12 @@ namespace HKMod
                     var bossRb = _bossHM.GetComponent<Rigidbody2D>();
                     _bossVx = bossRb != null ? bossRb.velocity.x : 0f;
                     _bossVy = bossRb != null ? bossRb.velocity.y : 0f;
+
+                    // Always poll boss HP
+                    _bossHp = _bossHM.hp;
+                    // Catch max on first valid frame if OnSceneLoaded missed it
+                    if (_bossMaxHp == 0)
+                        _bossMaxHp = _bossHM.hp;
                 }
             }
         }
@@ -211,12 +209,10 @@ namespace HKMod
             _cachedThreats = GameObject.FindObjectsOfType<DamageHero>();
 
             float px, py;
-            HealthManager bossHM;
             lock (_stateLock)
             {
-                px     = _playerX;
-                py     = _playerY;
-                bossHM = _bossHM;
+                px = _playerX;
+                py = _playerY;
             }
 
             GameObject nearest   = null;
@@ -336,7 +332,7 @@ namespace HKMod
             {
                 playerHp    = _playerHp;
                 playerMaxHp = _playerMaxHp;
-                bossHp      = _bossHp;
+                bossHp    = _bossHp == 0 && _bossMaxHp > 0 ? _bossMaxHp : _bossHp;
                 bossMaxHp   = _bossMaxHp;
                 playerX     = _playerX;
                 playerY     = _playerY;

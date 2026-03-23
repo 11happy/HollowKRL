@@ -172,14 +172,14 @@ class HollowKnightEnv(gym.Env):
             boss_dmg = self.prev_boss_hp - state["boss_hp"]
             if boss_dmg > 0:
                 hp_factor =  state["player_hp"] / max (state["player_max_hp"],1)
-                reward += 20.0 *(1+hp_factor)
+                reward += 30.0 *(1+hp_factor)
 
 
         if self.prev_player_hp is not None:
             player_dmg = self.prev_player_hp - state["player_hp"]
             if player_dmg > 0:
                 hp_factor = 1 + (1 - (state["player_hp"]/max(state["player_max_hp"],1)))
-                reward -= 20.0*hp_factor
+                reward -= 30.0*hp_factor
 
         if state["threat_active"]:
             curr_threat_dist = np.hypot(state["threat_dx"],state["threat_dy"])
