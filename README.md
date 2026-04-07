@@ -1,3 +1,6 @@
+> to complete
+## Gameplay of 820000 checkpoint
+![sample-play](sample_play.gif)
 ## Observation space
 
 Box(16,) float32:
@@ -54,3 +57,4 @@ Per-step:
 ## MOD
  mod streams JSON lines over a TCP socket on port 11000. The Python env connects as a
 client
+
