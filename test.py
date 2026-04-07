@@ -11,14 +11,14 @@ def make_env():
 env = DummyVecEnv([make_env])
 
 
-env = VecNormalize.load("/home/happy/hk_agent/checkpoints_2/ppo_hornet_3_vecnormalize_360000_steps.pkl", env)
+env = VecNormalize.load("/home/happy/HollowKRL/checkpoints_3/ppo_hornet_4_vecnormalize_820000_steps.pkl", env)
 
 
 env.training = False
 env.norm_reward = False   
 
 
-model = PPO.load("/home/happy/hk_agent/checkpoints_2/ppo_hornet_3_360000_steps.zip", env=env)
+model = PPO.load("/home/happy/HollowKRL/checkpoints_3/ppo_hornet_4_820000_steps.zip", env=env)
 
 
 obs = env.reset()
@@ -28,7 +28,7 @@ for episode in range(10):
     total_reward = 0
 
     while not done:
-        action, _ = model.predict(obs, deterministic=True)
+        action, _ = model.predict(obs, deterministic=False)
 
         obs, reward, done, info = env.step(action)
         total_reward += reward[0]
