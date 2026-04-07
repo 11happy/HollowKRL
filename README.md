@@ -1,6 +1,9 @@
 > to complete
 ## Gameplay of 820000 checkpoint
 ![sample-play](sample_play.gif)
+
+https://drive.google.com/file/d/1WXOgbZaxvZeY0SmdY3uRwIfc6R_FMZ1T/view?usp=sharing
+
 ## Observation space
 
 Box(16,) float32:
