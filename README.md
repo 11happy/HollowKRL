@@ -4,6 +4,10 @@
 
 https://drive.google.com/file/d/1WXOgbZaxvZeY0SmdY3uRwIfc6R_FMZ1T/view?usp=sharing
 
+to reproduce
+OC storm - https://oc-storm.weipuzhang.com/
+https://arxiv.org/pdf/2501.16443
+
 ## Observation space
 
 Box(16,) float32:
